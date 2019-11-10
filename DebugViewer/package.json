@@ -1,0 +1,17 @@
+{
+  "name": "debug-viewer",
+  "version": "0.0.0",
+  "description": "DebugViewer",
+  "main": "server.js",
+  "author": {
+    "name": ""
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "tsc --build --clean"
+  },
+  "devDependencies": {
+    "@types/node": "^8.0.14",
+    "typescript": "^3.2.2"
+  }
+}

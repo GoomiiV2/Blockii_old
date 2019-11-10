@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Blockii Debug viewer</title>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: calc(100% - 30px);
+            touch-action: none;
+        }
+    </style>
+
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <input type="file" id="file-input" />
+
+    <script>
+        var canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+        var createScene = function () {
+            var scene = new BABYLON.Scene(engine);
+            //var camera = new BABYLON.ArcRotateCamera("Camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0, 0, 5), scene);
+            var camera = new BABYLON.FlyCamera("Camera", new BABYLON.Vector3(0, 0, 5), scene);
+            camera.attachControl(canvas, true);
+
+            //var light1 = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(1, 1, 0), scene);
+            //var light2 = new BABYLON.PointLight("light2", new BABYLON.Vector3(0, 1, -1), scene);
+
+            //var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+
+            return scene;
+        };
+
+        var scene    = createScene();
+        var rootNode = new BABYLON.Node(scene);
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+            scene.render();
+        });
+
+        window.addEventListener("resize", function () {
+            engine.resize();
+        });
+
+        function BuildSceneFromJson(jsonData) {
+            let points = jsonData.Points;
+            let vecs = [];
+
+            for (let point of points) {
+                vecs.push(new BABYLON.Vector3(point.X, point.Y, point.Z));
+
+                var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 0.1 }, scene);
+                sphere.position.x = point.X;
+                sphere.position.y = point.Y;
+                sphere.position.z = point.Z;
+
+                console.log(`Added sphere for point ${point}`);
+            }
+
+            var lines = BABYLON.MeshBuilder.CreateLines("lines", { points: vecs }, scene);
+            //lines.rotation.x = 90;
+            //lines.rotation.y = 90;
+            //lines.rotation.z = 90;
+
+            //lines.scale[0] = -1;
+
+            BuildArrows(jsonData);
+        }
+
+        function BuildArrows(jsonData) {
+            const length = 1;
+
+            for (let arrowData of jsonData.Arrows) {
+                var lines = BABYLON.MeshBuilder.CreateLines("lines", {
+                    points: [
+                        new BABYLON.Vector3(arrowData.Pos.X, arrowData.Pos.Y, arrowData.Pos.Z),
+                        new BABYLON.Vector3(arrowData.Pos.X, arrowData.Pos.Y, arrowData.Pos.Z) + (new BABYLON.Vector3(arrowData.Normal.X, arrowData.Normal.Y, arrowData.Normal.Z) * length)
+                    ]}, scene);
+            }
+        }
+
+        function readSingleFile(e) {
+            var file = e.target.files[0];
+            if (!file) {
+                return;
+            }
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var contents = e.target.result;
+                let json = JSON.parse(contents);
+
+                BuildSceneFromJson(json);
+            };
+            reader.readAsText(file);
+        }
+
+        function displayContents(contents) {
+            var element = document.getElementById('file-content');
+            element.textContent = contents;
+        }
+
+        document.getElementById('file-input')
+            .addEventListener('change', readSingleFile, false);
+    </script>
+</body>
+</html>
