@@ -19,5 +19,11 @@ namespace Blockii.Exporters
             var vec = new Assimp.Vector3D(NumVec.X, NumVec.Y, NumVec.Z);
             return vec;
         }
+
+        public static Assimp.Vector3D ToAssV3(this Vector2 NumVec)
+        {
+            var vec = new Assimp.Vector3D(NumVec.X, NumVec.Y, 0);
+            return vec;
+        }
     }
 }

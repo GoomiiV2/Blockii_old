@@ -124,8 +124,9 @@ namespace Blockii.Exporters
     {
         private string Name;
         private string OutDir;
-        private int ExportedMeshIdx = 0;
-        private BrushConvData ConvData;
+        private int ExportedMeshIdx    = 0;
+        private BrushConvData ConvData = new BrushConvData();
+
 
         public ModelExporter(string OutputDir, string Name)
         {
@@ -137,21 +138,69 @@ namespace Blockii.Exporters
 
         public void ExportWorld(World World)
         {
-            var entities = World.Entitys.Where(x => x.Brushes.Count > 0);
-            /*Parallel.ForEach(entities, (entity) =>
-            {
-                var mesh = EntityToMesh(entity);
-                SaveMesh(mesh);
-            });*/
+            ConvData.TextureInfo = CompilerUtils.BuildTextureInfoMap(World);
+            var entities         = World.Entitys.Where(x => x.Brushes.Count > 0);
 
-            foreach (var entity in entities)
+            if (Config.Conversion.AllOneFile)
+            {
+                int meshTasksIdx = 0;
+                var meshTasks    = new Task<List<Mesh>>[entities.Count()];
+                foreach (var entity in entities)
+                {
+                    var task = Task.Factory.StartNew(() =>
+                    {
+                        return EntityToMesh(entity);
+                    });
+                    meshTasks[meshTasksIdx++] = task;
+                }
+                Task.WaitAll(meshTasks);
+
+                using (var asmpCntx = new AssimpContext())
+                {
+                    var idx                  = ExportedMeshIdx++;
+                    var name                 = $"{Name}_All.obj";
+                    var exportPath           = Path.Combine(OutDir, name);
+                    var scene                = new Scene();
+                    scene.RootNode           = new Node("Root");
+                    scene.RootNode.Transform = Assimp.Matrix4x4.FromEulerAnglesXYZ((float)(Math.PI * 90 / 180.0f), 0, 0);
+
+                    int meshIdx = 0;
+                    foreach (var mesh in meshTasks)
+                    {
+                        foreach (var subMesh in mesh.Result)
+                        {
+                            scene.Meshes.Add(subMesh);
+                            scene.RootNode.MeshIndices.Add(meshIdx++);
+                        }
+                    }
+
+                    foreach (var tex in ConvData.TextureInfo)
+                    {
+                        Material mat = new Material();
+                        mat.Name     = tex.Value.FileName;
+                        scene.Materials.Add(mat);
+                    }
+
+                    asmpCntx.ExportFile(scene, exportPath, "obj", PostProcessSteps.GenerateUVCoords);
+                }
+            }
+            else
+            {
+                Parallel.ForEach(entities, (entity) =>
+                {
+                    var meshs = EntityToMesh(entity);
+                    SaveMesh(meshs.First());
+                });
+            }
+
+            /*foreach (var entity in entities)
             {
                 var mesh = EntityToMesh(entity);
                 SaveMesh(mesh);
-            }
+            }*/
         }
 
-        private Mesh EntityToMesh(Entity Entity)
+        /*private Mesh EntityToMesh(Entity Entity)
         {
             var mesh    = new Mesh("EntityMesh");
             int vertIdx = 0;
@@ -165,6 +214,7 @@ namespace Blockii.Exporters
                     {
                         mesh.Vertices.Add(vert.Pos.ToAss());
                         mesh.Normals.Add(poly.BrushFacePlane.Normal.ToAss());
+                        mesh.TextureCoordinateChannels[0].Add(vert.Uv.ToAssV3());
                     }
 
                     int numFaces = (poly.Verts.Count() - 3) + 1;
@@ -178,6 +228,41 @@ namespace Blockii.Exporters
             }
 
             return mesh;
+        }*/
+
+        private List<Mesh> EntityToMesh(Entity Entity)
+        {
+            var subMeshes = new Dictionary<ushort, (int vertIdx, int faceIdx, Mesh mesh)>(); // a submesh per texture
+
+            foreach (var brush in Entity.Brushes)
+            {
+                var bmdl = brush.ToBrushModel(ref Entity, ref ConvData);
+                foreach (var poly in bmdl.Polys)
+                {
+                    if (!subMeshes.ContainsKey(poly.TexID)) { subMeshes.Add(poly.TexID, (0, 0, new Mesh($"Mat_{poly.TexID}"))); }
+                    var subMesh = subMeshes[poly.TexID];
+
+                    foreach (var vert in poly.Verts)
+                    {
+                        subMesh.mesh.Vertices.Add(vert.Pos.ToAss());
+                        subMesh.mesh.Normals.Add(poly.BrushFacePlane.Normal.ToAss());
+                        subMesh.mesh.TextureCoordinateChannels[0].Add(vert.Uv.ToAssV3());
+                        subMesh.mesh.MaterialIndex = poly.TexID;
+                    }
+
+                    int numFaces = (poly.Verts.Count() - 3) + 1;
+                    for (int i = subMesh.vertIdx + 1; i < subMesh.vertIdx + numFaces + 1; i++)
+                    {
+                        subMesh.mesh.Faces.Add(new Face(new int[] { subMesh.vertIdx, i, i + 1 }));
+                    }
+
+                    subMesh.vertIdx += poly.Verts.Count;
+                    subMeshes[poly.TexID] = subMesh;
+                }
+            }
+
+            var meshes = subMeshes.Select(x => x.Value.mesh).ToList();
+            return meshes;
         }
 
         private void SaveMesh(Mesh Mesh)

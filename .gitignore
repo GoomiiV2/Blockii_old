@@ -12,6 +12,9 @@
 /Test
 /TestMaps/Quake
 /TestMaps/autosave
+/TestMaps/Half-Life
+/TestMaps/textures
+/TestMaps/wads
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

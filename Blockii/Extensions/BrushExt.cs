@@ -32,9 +32,12 @@ namespace Blockii.Extensions
             var polys = new Poly[Brush.Planes.Count];
             for (int i = 0; i < polys.Length; i++)
             {
-                polys[i] = new Poly()
+                var texInfo = ConvData.TextureInfo[Brush.Planes[i].TextureRef];
+                polys[i]    = new Poly()
                 {
-                    BrushFacePlane = Brush.Planes[i].GetPlane()
+                    BrushFacePlane = Brush.Planes[i].GetPlane(),
+                    TexID          = texInfo.Id,
+                    Exclude        = texInfo.Exclude
                 };
             }
 
@@ -67,6 +70,22 @@ namespace Blockii.Extensions
                 }
             }
 
+            for (int i = 0; i < Brush.Planes.Count; i++)
+            {
+                var poly     = polys[i];
+                var plane    = Brush.Planes[i];
+                var texInfo  = ConvData.TextureInfo[plane.TextureRef];
+                for (int aye = 0; aye < poly.Verts.Count; aye++)
+                {
+                    var vert = poly.Verts[aye];
+                    poly.Verts[aye] = new Vertex()
+                    {
+                        Pos = vert.Pos,
+                        Uv  = CompilerUtils.GetUVs(plane, vert.Pos, texInfo)
+                    };
+                }
+            }
+
             return polys;
         }
 
@@ -81,7 +100,7 @@ namespace Blockii.Extensions
             foreach (var poly in polys)
             {
                 // Check if this poly should be excluded
-                if (true)
+                if (!poly.Exclude)
                 {
                     poly.SortVerts();
                     bMdl.Polys.Add(poly);

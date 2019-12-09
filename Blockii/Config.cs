@@ -7,7 +7,8 @@ namespace Blockii
 {
     public class General
     {
-        public double Epsilon = 0.0001d;
+        public double Epsilon = 0.001d;
+        public List<string> TextureRoots = new List<string>(); // Base folders to look for textures (wads should be extracted to folders of images)
     }
 
     public class Conversion
@@ -15,10 +16,12 @@ namespace Blockii
         public ModelOriginPos ModelOrignPosition = ModelOriginPos.Center;
         public Vector3 UpAxis                    = Vector3.UnitZ;
         public bool AllOneFile                   = true;
+        public string[] ExcludeTextureNames      = null; // Texture names to exclude from genrating faces, if the texture name contians this word it will be excluded
     }
 
     public static class Config
     {
+        public static readonly string[] ImageExtensions = new string[] { "png", "jpg" };
         public static General General       = new General();
         public static Conversion Conversion = new Conversion();
     }

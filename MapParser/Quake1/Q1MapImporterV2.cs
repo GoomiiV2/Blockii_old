@@ -55,8 +55,11 @@ namespace MapParser.Quake1
                 blockOpenCount = newBlockOpenCount;
             }
 
+            World.GameType = IsValveFormat ? Game.Halflife : Game.Quake1;
+
             sw.Stop();
-            Log.Information($"Parsed Quake1 Map in {sw.Elapsed.TotalSeconds} second");
+            var mapTypeName = IsValveFormat ? "Half-Life 1" : "Quake 1";
+            Log.Information($"Parsed {mapTypeName} Map in {sw.Elapsed.TotalSeconds} second");
         }
 
         private Entity ParseEntity(ReadOnlySpan<string> Lines)
@@ -88,7 +91,17 @@ namespace MapParser.Quake1
                 else if (!isReadingBrush && !IsLineComment(line) && !IsBlockEnd(line)) // Key value
                 {
                     var (key, value) = ParseKeyValue(line);
-                    entity.KeyValues.Add(key, value);
+                    entity.KeyValues.TryAdd(key, value);
+                }
+            }
+
+            // Worldspawn
+            if (entity.KeyValues.ContainsKey("CLASSNAME") && entity.KeyValues["CLASSNAME"].ToUpper() == WORLDSPAWN_STR)
+            {
+                if (entity.KeyValues.TryGetValue("WAD", out string wadsList))
+                {
+                    var wads = wadsList.Split(';')?.Where(x => x != "");
+                    World.Wads.AddRange(wads);
                 }
             }
 
@@ -148,21 +161,55 @@ namespace MapParser.Quake1
             }
             else
             {
+                // Need to convert to texture axis
+                var qAxis = GetQuakeAxis(plane);
                 plane.TextureXAxis = new TextureAxisInfo()
                 {
-                    Axis   = Vector3.UnitX,
+                    Axis   = qAxis.TextureAxi.XAxis,
                     Offset = float.Parse(segments[segmentIdx++])
                 };
                 plane.TextureYAxis = new TextureAxisInfo()
                 {
-                    Axis = Vector3.UnitY,
+                    Axis   = qAxis.TextureAxi.YAxis,
                     Offset = float.Parse(segments[segmentIdx++])
                 };
+
                 plane.TextureRotation = float.Parse(segments[segmentIdx++]);
                 plane.TextureScale    = Utils.Vector2FromStrings(segments[segmentIdx++], segments[segmentIdx++]);
+
+                // Rotate the axis by Quake rotation
+                var rotMatrix           = Matrix4x4.CreateFromAxisAngle(qAxis.QuakeAxis, (float)(Math.PI * plane.TextureRotation / 180.0));
+                plane.TextureXAxis.Axis = Vector3.Transform(qAxis.TextureAxi.XAxis, rotMatrix);
+                plane.TextureYAxis.Axis = Vector3.Transform(qAxis.TextureAxi.YAxis, rotMatrix);
             }
 
             return plane;
+        }
+
+        private static List<(Vector3 QuakeAxis, (Vector3, Vector3) TextureAxi)> anglesToAxis = new List<(Vector3, (Vector3, Vector3))> {
+                ( Vector3.UnitZ,    (Vector3.UnitX, -Vector3.UnitY)), // Bottom
+                (-Vector3.UnitZ,    (Vector3.UnitX, -Vector3.UnitY)), // Top
+                ( Vector3.UnitX,    (Vector3.UnitY, -Vector3.UnitZ)), // Left
+                (-Vector3.UnitX,    (Vector3.UnitY, -Vector3.UnitZ)), // Right
+                ( Vector3.UnitY,    (Vector3.UnitX, -Vector3.UnitZ)), // Front
+                (-Vector3.UnitY,    (Vector3.UnitX, -Vector3.UnitZ)), // Back
+        };
+
+        private (Vector3 QuakeAxis, (Vector3 XAxis, Vector3 YAxis) TextureAxi) GetQuakeAxis(BrushPlane Plane)
+        {
+            (int idx, float angle) best = (0, 100000);
+            for (int i = 0; i < anglesToAxis.Count; i++)
+            {
+                var angleAxis = anglesToAxis[i];
+                var dot       = 1 - Vector3.Dot(Plane.GetPlane().Normal, angleAxis.QuakeAxis);
+                if (dot < best.angle)
+                {
+                    best = (i, dot);
+                }
+            }
+
+            //Log.Information($"Face: {Plane.GetPlane().Normal}, Best Axis Normal: {anglesToAxis[best.idx].QuakeAxis}, Best Angle: {best.angle}");
+            return anglesToAxis[best.idx];
         }
 
         private (string Key, string Value) ParseKeyValue(string Line)
@@ -180,7 +227,7 @@ namespace MapParser.Quake1
 
             //Log.Information($"{key}, {value}");
 
-            return (key, value);
+            return (key.ToUpper(), value);
         }
 
         #region Misc Utils

@@ -5,9 +5,11 @@ VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blockii", "Blockii.csproj", "{3D83504A-6DC2-4705-993E-818AECADFC7E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MapParser", "..\MapParser\MapParser.csproj", "{BBB9B412-A950-4EF6-ABA4-8F3CC93C85E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Formatii", "..\MapParser\Formatii.csproj", "{BBB9B412-A950-4EF6-ABA4-8F3CC93C85E1}"
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "DebugViewer", "..\DebugViewer\DebugViewer.njsproj", "{5C1DED50-160A-41A6-9DB7-93F2AC6E5782}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wadii", "..\Wadii\Wadii.csproj", "{95F87887-99E8-4D8C-A271-C017C7FBDAE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,14 @@ Global
 		{5C1DED50-160A-41A6-9DB7-93F2AC6E5782}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C1DED50-160A-41A6-9DB7-93F2AC6E5782}.Release|x86.ActiveCfg = Release|Any CPU
 		{5C1DED50-160A-41A6-9DB7-93F2AC6E5782}.Release|x86.Build.0 = Release|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Debug|x86.Build.0 = Debug|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Release|x86.ActiveCfg = Release|Any CPU
+		{95F87887-99E8-4D8C-A271-C017C7FBDAE8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

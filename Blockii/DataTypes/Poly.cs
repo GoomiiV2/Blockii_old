@@ -1,5 +1,6 @@
 ﻿using Blockii.Compiler;
 using Blockii.Extensions;
+using MoreLinq;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -17,6 +18,7 @@ namespace Blockii.DataTypes
         public Vector3 Center;
         public ushort TexID;
         public Plane BrushFacePlane;
+        public bool Exclude; // If true this poly won't be exported
 
         public void GenerateCenter() 
         {
@@ -68,23 +70,16 @@ namespace Blockii.DataTypes
                     }
                 }
 
-                var faceDot   = Vector3.Dot(BrushFacePlane.Normal, facePlane.Normal);
-                if (faceDot <= Config.General.Epsilon)
+                var facePlane2 = Plane.CreateFromVertices(Verts[0].Pos, Verts[1].Pos, Verts[2].Pos);
+                var faceDot    = Vector3.Dot(BrushFacePlane.Normal, facePlane2.Normal);
+                if (faceDot > 0.01f)
                 {
                     Verts.Reverse();
                 }
-
-                /*var j = Verts.Count;
-                for (int i = 0; i < j / 2; i++)
-                {
-                    var v = Verts[i];
-                    Verts[i] = Verts[j - i - 1];
-                    Verts[j - i - 1] = v;
-                }*/
             }
             else
             {
-                Log.Warning($"Got an invalid poly with {Verts.Count} verts");
+                //Log.Warning($"Got an invalid poly with {Verts.Count} verts");
             }
         }
     }

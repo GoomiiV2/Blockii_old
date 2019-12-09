@@ -8,6 +8,7 @@ namespace MapParser.Common
     {
         public Game GameType;
         public List<Entity> Entitys = new List<Entity>();
+        public List<string> Wads = new List<string>();
     }
 
     public enum Game
