@@ -49,10 +49,12 @@ namespace Blockii.Compiler
             uvs.X  = Vector3.Dot(BrushPlane.TextureXAxis.Axis, Pos);
             uvs.X /= ((float)TexInfo.Width) * BrushPlane.TextureScale.X;
             uvs.X += BrushPlane.TextureXAxis.Offset / TexInfo.Width;
+            //uvs.X *= -1;
 
             uvs.Y = Vector3.Dot(BrushPlane.TextureYAxis.Axis, Pos);
             uvs.Y /= ((float)TexInfo.Height) * BrushPlane.TextureScale.Y;
             uvs.Y += BrushPlane.TextureYAxis.Offset / TexInfo.Height;
+            uvs.Y *= -1;
 
             /*var axis = new Vector2(Vector3.Dot(Pos, BrushPlane.TextureXAxis.Axis) * BrushPlane.TextureScale.X, Vector3.Dot(Pos, BrushPlane.TextureYAxis.Axis) * BrushPlane.TextureScale.Y);
             uvs.X = BrushPlane.TextureXAxis.Offset + (axis.X / TexInfo.Width);

@@ -5,6 +5,12 @@ using System.Text;
 
 namespace Blockii
 {
+    // What the target engine / thing is
+    public enum ProjectTargets
+    {
+        UE4
+    }
+
     public class General
     {
         public double Epsilon = 0.001d;
@@ -22,8 +28,9 @@ namespace Blockii
     public static class Config
     {
         public static readonly string[] ImageExtensions = new string[] { "png", "jpg" };
-        public static General General       = new General();
-        public static Conversion Conversion = new Conversion();
+        public static General General                   = new General();
+        public static Conversion Conversion             = new Conversion();
+        public static ProjectTargets ProjectTarget      = ProjectTargets.UE4;
     }
 
     public enum ModelOriginPos

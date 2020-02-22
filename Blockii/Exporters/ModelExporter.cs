@@ -124,8 +124,11 @@ namespace Blockii.Exporters
     {
         private string Name;
         private string OutDir;
-        private int ExportedMeshIdx    = 0;
-        private BrushConvData ConvData = new BrushConvData();
+        private int ExportedMeshIdx           = 0;
+        private BrushConvData ConvData        = new BrushConvData();
+        private List<string> OutputMeshePaths = new List<string>();
+
+        public string[] ExportedMeshPaths => OutputMeshePaths.ToArray();
 
 
         public ModelExporter(string OutputDir, string Name)
@@ -162,7 +165,8 @@ namespace Blockii.Exporters
                     var exportPath           = Path.Combine(OutDir, name);
                     var scene                = new Scene();
                     scene.RootNode           = new Node("Root");
-                    scene.RootNode.Transform = Assimp.Matrix4x4.FromEulerAnglesXYZ((float)(Math.PI * 90 / 180.0f), 0, 0);
+                    var rotationAxis         = Config.Conversion.UpAxis * (float)(Math.PI * 90 / 180.0f);
+                    scene.RootNode.Transform = Assimp.Matrix4x4.FromEulerAnglesXYZ(rotationAxis.X, rotationAxis.Y, rotationAxis.Z);
 
                     int meshIdx = 0;
                     foreach (var mesh in meshTasks)
@@ -181,7 +185,8 @@ namespace Blockii.Exporters
                         scene.Materials.Add(mat);
                     }
 
-                    asmpCntx.ExportFile(scene, exportPath, "obj", PostProcessSteps.GenerateUVCoords);
+                    asmpCntx.ExportFile(scene, exportPath, "obj", PostProcessSteps.GenerateNormals | PostProcessSteps.FixInFacingNormals | PostProcessSteps.GenerateUVCoords);
+                    OutputMeshePaths.Add(exportPath);
                 }
             }
             else
@@ -245,7 +250,7 @@ namespace Blockii.Exporters
                     foreach (var vert in poly.Verts)
                     {
                         subMesh.mesh.Vertices.Add(vert.Pos.ToAss());
-                        subMesh.mesh.Normals.Add(poly.BrushFacePlane.Normal.ToAss());
+                        subMesh.mesh.Normals.Add(poly.BrushFacePlane.Normal.ToAss() * -1);
                         subMesh.mesh.TextureCoordinateChannels[0].Add(vert.Uv.ToAssV3());
                         subMesh.mesh.MaterialIndex = poly.TexID;
                     }
@@ -286,6 +291,7 @@ namespace Blockii.Exporters
                 scene.Materials.Add(mat);
 
                 asmpCntx.ExportFile(scene, exportPath, "obj", PostProcessSteps.GenerateUVCoords);
+                OutputMeshePaths.Add(exportPath);
             }
         }
     }

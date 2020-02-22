@@ -16,6 +16,7 @@ namespace Blockii.Extensions
 
         public static PlanePos IsPointInfront(this Plane Plane, Vector3 Point)
         {
+            //Point -= Plane.Normal * Plane.D;
             var dot = Vector3.Dot(Plane.Normal, Point) + Plane.D;
             if (dot < -Config.General.Epsilon)
             {

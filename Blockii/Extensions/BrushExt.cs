@@ -27,7 +27,7 @@ namespace Blockii.Extensions
             return isOutsideBrush;
         }
 
-        public static Poly[] GetBrushPolys(Brush Brush, ref Entity Entity, ref BrushConvData ConvData)
+        public static Poly[] GetBrushPolys(Brush Brush, ref Entity Entity, ref BrushConvData ConvData, Vector3 Offset)
         {
             var polys = new Poly[Brush.Planes.Count];
             for (int i = 0; i < polys.Length; i++)
@@ -81,7 +81,7 @@ namespace Blockii.Extensions
                     poly.Verts[aye] = new Vertex()
                     {
                         Pos = vert.Pos,
-                        Uv  = CompilerUtils.GetUVs(plane, vert.Pos, texInfo)
+                        Uv  = CompilerUtils.GetUVs(plane, vert.Pos + Offset, texInfo)
                     };
                 }
             }
@@ -91,7 +91,26 @@ namespace Blockii.Extensions
 
         public static BrushModel ToBrushModel(this Brush Brush, ref Entity Entity, ref BrushConvData ConvData)
         {
-            var polys = GetBrushPolys(Brush, ref Entity, ref ConvData);
+            /*var polys = GetBrushPolys(Brush, ref Entity, ref ConvData);
+
+            var brushCenter = Vector3.Zero;
+            foreach (var poly in polys)
+            {
+                poly.GenerateCenter();
+                brushCenter += poly.Center;
+            }
+            brushCenter /= polys.Length;*/
+
+            //Log.Information("Before");
+            //Log.Information(Brush.ToString());
+
+            var oldCenter = Brush.MakeLocalSpace();
+
+            //Log.Information($"After, center: {oldCenter}");
+            //Log.Information(Brush.ToString());
+
+            var polys = GetBrushPolys(Brush, ref Entity, ref ConvData, oldCenter);
+
             var bMdl  = new BrushModel()
             {
                 Polys = new List<Poly>(polys.Length)
@@ -103,6 +122,16 @@ namespace Blockii.Extensions
                 if (!poly.Exclude)
                 {
                     poly.SortVerts();
+
+                    for (int i = 0; i < poly.Verts.Count; i++)
+                    {
+                        poly.Verts[i] = new Vertex()
+                        {
+                            Pos = poly.Verts[i].Pos + oldCenter,
+                            Uv  = poly.Verts[i].Uv
+                        };
+                    }
+
                     bMdl.Polys.Add(poly);
                 }
             }

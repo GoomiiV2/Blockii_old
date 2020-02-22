@@ -18,7 +18,13 @@ namespace MapParser.Common
         public TextureAxisInfo TextureYAxis;
 
         private Plane? NumericPlane = null;
-        public Plane GetPlane() => NumericPlane ??= Plane.CreateFromVertices(Point1, Point2, Point3);
+        public Plane GetPlane()     => NumericPlane ??= Plane.CreateFromVertices(Point1, Point2, Point3);
+        public Vector3 GetCenter()  => (Point1 + Point2 + Point3) / 3;
+
+        public void ResetPlane()
+        {
+            NumericPlane = Plane.CreateFromVertices(Point1, Point2, Point3);
+        }
     }
 
     public struct TextureAxisInfo

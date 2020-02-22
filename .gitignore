@@ -335,3 +335,11 @@ ASALocalRun/
 
 # MFractors (Xamarin productivity tool) working folder 
 .mfractor/
+/Plugins/UE4/BlockiiTest/Saved
+/Plugins/UE4/BlockiiTest/Intermediate
+/Plugins/UE4/BlockiiTest/Binaries/Win64
+/Plugins/UE4/BlockiiTest/Config
+/Plugins/UE4/BlockiiTest/Content
+/Plugins/UE4/BlockiiTest/Plugins/Blockii/Binaries/Win64
+/Plugins/UE4/BlockiiTest/Plugins/Blockii/Intermediate/Build/Win64/UE4Editor
+/TestMaps/UE4

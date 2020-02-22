@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Blockii",
+	"Description": "Quake style mapping bridge",
+	"Category": "Other",
+	"CreatedBy": "Arkii",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Blockii",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}

@@ -22,6 +22,7 @@ namespace MapParser.Quake1
             World.GameType   = Game.Quake1;
             var mapFileLines = File.ReadAllLines(Filepath).AsSpan();
             ParseMap(mapFileLines);
+            mapFileLines.Clear();
 
             return World;
         }

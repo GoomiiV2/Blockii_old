@@ -17,6 +17,7 @@ namespace Blockii.DataTypes
         public List<Vertex> Verts = new List<Vertex>();
         public Vector3 Center;
         public ushort TexID;
+        public string TextureRef;
         public Plane BrushFacePlane;
         public bool Exclude; // If true this poly won't be exported
 
@@ -38,6 +39,17 @@ namespace Blockii.DataTypes
             {
                 var facePlane = Plane.CreateFromVertices(Verts[0].Pos, Verts[1].Pos, Verts[2].Pos);
                 GenerateCenter();
+
+                /*for (int i = 0; i < Verts.Count; i++)
+                {
+                    Verts[i] = new Vertex()
+                    {
+                        Pos = Verts[i].Pos - Center,
+                        Uv  = Verts[i].Uv
+                    };
+                }*/
+
+                //GenerateCenter();
 
                 for (int i = 0; i < Verts.Count - 2; i++)
                 {
@@ -70,9 +82,13 @@ namespace Blockii.DataTypes
                     }
                 }
 
-                var facePlane2 = Plane.CreateFromVertices(Verts[0].Pos, Verts[1].Pos, Verts[2].Pos);
-                var faceDot    = Vector3.Dot(BrushFacePlane.Normal, facePlane2.Normal);
-                if (faceDot > 0.01f)
+                var middleIdx     = Math.Abs(Verts.Count / 2);
+                var facePlane2    = Plane.CreateFromVertices(Verts[0].Pos, Verts[middleIdx].Pos, Verts[Verts.Count-1].Pos);
+                var faceDot       = Vector3.Dot(BrushFacePlane.Normal, facePlane2.Normal);
+
+                //Log.Information($"sort verts dot: {faceDot} faceDot > 0.001f {faceDot > 0.001f} ({faceDot - 0.001f})");
+
+                if (faceDot > 0.001f)
                 {
                     Verts.Reverse();
                 }
